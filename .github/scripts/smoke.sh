@@ -136,7 +136,7 @@ shot modo-mercado
 tap "Banana"
 tap "Arroz"
 shot itens-marcados
-tap "Concluir compra"
+tap "Concluir compra (1)"
 tap "Concluir"
 alive "concluir compra"
 shot depois-da-compra

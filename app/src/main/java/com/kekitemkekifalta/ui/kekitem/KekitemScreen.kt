@@ -20,7 +20,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -50,7 +54,6 @@ import com.kekitemkekifalta.ui.components.AddOptions
 import com.kekitemkekifalta.ui.components.ChoiceChip
 import com.kekitemkekifalta.ui.components.EmptyState
 import com.kekitemkekifalta.ui.components.FuelBar
-import com.kekitemkekifalta.ui.components.IconCircleButton
 import com.kekitemkekifalta.ui.components.KekButton
 import com.kekitemkekifalta.ui.components.KekGhostButton
 import com.kekitemkekifalta.ui.components.QuickAddBar
@@ -222,35 +225,36 @@ fun KekitemScreen(onOpenItem: (String) -> Unit) {
 @Composable
 private fun HaveCard(row: HaveRow, onOpen: () -> Unit, onFinished: () -> Unit, onSpoiled: () -> Unit, modifier: Modifier = Modifier) {
     val item = row.item
+    val state = row.state
+    val muted = KekTheme.colors.muted
     StickerCard(modifier.fillMaxWidth(), onClick = onOpen, contentPadding = PaddingValues(start = 14.dp, end = 12.dp, top = 12.dp, bottom = 12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(item.sectorEnum.emoji, style = MaterialTheme.typography.headlineSmall)
-            Spacer(Modifier.width(10.dp))
-            Text(
-                item.name,
-                style = MaterialTheme.typography.titleMedium,
-                color = KekTheme.colors.ink,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f, fill = false),
-            )
-            item.quantityLabel?.let {
-                Spacer(Modifier.width(6.dp))
-                Text(it, style = MaterialTheme.typography.bodySmall, color = KekTheme.colors.muted, maxLines = 1)
-            }
-        }
-        Spacer(Modifier.height(8.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            val state = row.state
             Column(Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(item.sectorEnum.emoji, style = MaterialTheme.typography.titleLarge)
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        buildAnnotatedString {
+                            append(item.name)
+                            item.quantityLabel?.let { qty ->
+                                withStyle(SpanStyle(color = muted, fontSize = 13.sp)) { append("  $qty") }
+                            }
+                        },
+                        style = MaterialTheme.typography.titleMedium,
+                        color = KekTheme.colors.ink,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
                 if (state != null) {
+                    Spacer(Modifier.height(6.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         StatusPill(state.status)
                         Spacer(Modifier.width(6.dp))
                         Text(
                             StockClock.remainingLabel(state),
                             style = MaterialTheme.typography.bodySmall,
-                            color = KekTheme.colors.muted,
+                            color = muted,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
@@ -260,11 +264,13 @@ private fun HaveCard(row: HaveRow, onOpen: () -> Unit, onFinished: () -> Unit, o
                 }
             }
             Spacer(Modifier.width(10.dp))
-            if (item.clock == ClockType.SPOILS) {
-                IconCircleButton(R.drawable.ic_waste, "Estragou", onSpoiled)
-                Spacer(Modifier.width(4.dp))
+            Column(horizontalAlignment = Alignment.End) {
+                KekButton("acabou", onClick = onFinished, icon = R.drawable.ic_check, color = KekTheme.colors.mustard, contentColor = KekTheme.colors.inkOnLight)
+                if (item.clock == ClockType.SPOILS) {
+                    Spacer(Modifier.height(6.dp))
+                    KekGhostButton("estragou", onClick = onSpoiled, icon = R.drawable.ic_waste)
+                }
             }
-            KekButton("acabou", onClick = onFinished, icon = R.drawable.ic_check, color = KekTheme.colors.mustard, contentColor = KekTheme.colors.inkOnLight)
         }
     }
 }

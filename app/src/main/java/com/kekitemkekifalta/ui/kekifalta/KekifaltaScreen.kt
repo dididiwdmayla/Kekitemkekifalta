@@ -373,7 +373,7 @@ private fun ExportSheet(
             }
             Spacer(Modifier.height(4.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                KekButton("Compartilhar", { onAction(marketId, ExportAction.SHARE_TEXT) }, Modifier.weight(1f), icon = R.drawable.ic_share)
+                KekButton("Mandar", { onAction(marketId, ExportAction.SHARE_TEXT) }, Modifier.weight(1f), icon = R.drawable.ic_share)
                 KekGhostButton("Copiar", { onAction(marketId, ExportAction.COPY_TEXT) }, Modifier.weight(1f), icon = R.drawable.ic_copy)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {

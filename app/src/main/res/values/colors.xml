@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="paper">#FFFFF4E2</color>
+    <color name="ink">#FF2A1E14</color>
+    <color name="tomato">#FFE4572E</color>
+    <color name="mustard">#FFF2B134</color>
+    <color name="leaf">#FF2F8F5B</color>
+    <color name="cream">#FFFFF8EC</color>
+    <color name="ic_launcher_background">#FFE4572E</color>
+    <color name="window_background">#FFFFF4E2</color>
+</resources>

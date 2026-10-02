@@ -13,6 +13,8 @@ import com.kekitemkekifalta.data.SettingsStore
 import com.kekitemkekifalta.data.db.AppDatabase
 import com.kekitemkekifalta.notify.SummaryNotifier
 import com.kekitemkekifalta.notify.SummaryScheduler
+import com.kekitemkekifalta.data.UndoToken
+import kotlinx.coroutines.flow.MutableSharedFlow
 
 /** Manual dependency container: everything the screens need, created once. */
 class AppContainer(context: Context) {
@@ -22,6 +24,14 @@ class AppContainer(context: Context) {
     val markets: MarketRepository = RoomMarketRepository(db, { settings.householdId })
     val backup: BackupRepository = RoomBackupRepository(db, settings)
     val scheduler = SummaryScheduler(context, settings)
+
+    /** Snackbar messages from any screen, shown by the app shell. */
+    val messages = MutableSharedFlow<UiMessage>(extraBufferCapacity = 8)
+}
+
+sealed interface UiMessage {
+    data class Text(val text: String) : UiMessage
+    data class Undo(val token: UndoToken) : UiMessage
 }
 
 class KekitemApp : Application() {

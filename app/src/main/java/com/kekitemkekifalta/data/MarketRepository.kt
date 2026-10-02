@@ -13,6 +13,7 @@ interface MarketRepository {
     fun observeMarkets(): Flow<List<MarketEntity>>
     fun observeMarket(id: String): Flow<MarketEntity?>
     fun observeAisles(marketId: String): Flow<List<AisleEntity>>
+    fun observeAllAisles(): Flow<List<AisleEntity>>
     fun observeShelfNotes(marketId: String): Flow<List<ShelfNoteEntity>>
     fun observeShelfNotesForItem(itemId: String): Flow<List<ShelfNoteEntity>>
 
@@ -45,6 +46,7 @@ class RoomMarketRepository(
     override fun observeMarkets(): Flow<List<MarketEntity>> = markets.observeAll()
     override fun observeMarket(id: String): Flow<MarketEntity?> = markets.observe(id)
     override fun observeAisles(marketId: String): Flow<List<AisleEntity>> = aisles.observeForMarket(marketId)
+    override fun observeAllAisles(): Flow<List<AisleEntity>> = aisles.observeAllLive()
     override fun observeShelfNotes(marketId: String): Flow<List<ShelfNoteEntity>> = notes.observeForMarket(marketId)
     override fun observeShelfNotesForItem(itemId: String): Flow<List<ShelfNoteEntity>> = notes.observeForItem(itemId)
 

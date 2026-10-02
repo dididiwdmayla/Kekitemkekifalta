@@ -77,6 +77,9 @@ val DarkKek = KekColors(
     isDark = true,
 )
 
+/** Text on mustard/soft accents, which stay light in both themes. */
+val KekColors.inkOnLight: Color get() = Color(0xFF2A1E14)
+
 private val LocalKekColors = staticCompositionLocalOf { LightKek }
 
 object KekTheme {

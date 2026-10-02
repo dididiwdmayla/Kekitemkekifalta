@@ -29,16 +29,21 @@ jobs:
 
       - name: Schema do Room precisa estar versionado
         run: |
-          changes="$(git status --porcelain -- app/schemas)"
-          if [ -n "$changes" ]; then
-            echo "::error::O schema do Room mudou e não foi commitado em app/schemas (necessário para migrações)."
-            echo "$changes"
-            for f in $(git ls-files --others --modified --exclude-standard -- app/schemas); do
-              echo "===== $f"
-              cat "$f"
-            done
-            exit 1
-          fi
+          # The build regenerates app/schemas; it must match what is committed (needed for migrations).
+          fail=0
+          for f in $(git ls-files --others --exclude-standard -- app/schemas); do
+            echo "::error::Schema novo do Room não commitado: $f"
+            cat "$f"
+            fail=1
+          done
+          for f in $(git diff --name-only -- app/schemas); do
+            if ! diff <(git show "HEAD:$f" | jq -S .) <(jq -S . "$f") > /dev/null; then
+              echo "::error::Schema do Room mudou e não foi commitado: $f"
+              git diff -- "$f"
+              fail=1
+            fi
+          done
+          exit $fail
 
       - name: Relatórios de teste
         if: failure()

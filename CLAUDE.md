@@ -21,7 +21,7 @@ O dono não programa: trabalho entregue por PR, e só está pronto com o CI verd
 - Keystore fixo em `keystore/` (repo privado, uso pessoal). Nunca trocar: o APK novo deixaria de instalar por cima.
 - `versionCode` = número da execução do workflow Release. Não renomear `release.yml`.
 - `ci.yml`: testes, APK release e monkey no emulador. `release.yml`: push na `main` publica a release `latest`.
-- O ambiente do Claude não tem Android SDK nem Maven do Google: validar pelo Actions no branch.
+- O ambiente do Claude não tem Android SDK nem Maven do Google: validar pelo Actions no branch. Screenshots do teste de fumaça: `git fetch origin +refs/ci/smoke-shots:refs/ci/smoke-shots`.
 
 ## Estilo
 - Texto de interface em pt-BR, tom bem-humorado; código e comentários em inglês.

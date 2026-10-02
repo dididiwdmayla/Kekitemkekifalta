@@ -15,6 +15,7 @@
 - [x] "Estragou" registra desperdício e reduz a estimativa; edição manual da duração
 - [x] Kekifalta: lista manual + "Sugeridos" (confirmar / ainda tem)
 - [x] Desfazer em toda movimentação (snackbar)
+- [x] "Começar com o básico" no kekitem vazio
 - [x] Mercados com corredores ordenados, setores por corredor, reordenação arrastando, modelo padrão
 - [x] Anotação de prateleira por item e por mercado (e corredor fixo opcional)
 - [x] Mapa esquemático: blocos na ordem do trajeto, contagem, corredores vazios recolhidos, corredor atual em destaque
@@ -41,7 +42,6 @@
 - [ ] Preços e histórico de preços
 
 ### Ideias anotadas no caminho
-- [ ] Botão "começar com o básico" no kekitem vazio (adicionar vários itens do catálogo de uma vez)
 - [ ] Ajustar a quantidade comprada direto no modo mercado
 - [ ] Teste instrumentado de migração do Room quando existir a versão 2 do banco
 - [ ] Deduplicar itens com mesmo nome ao mesclar backups de aparelhos diferentes

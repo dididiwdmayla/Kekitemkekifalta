@@ -30,12 +30,15 @@ import com.kekitemkekifalta.AppContainer
 import com.kekitemkekifalta.R
 import com.kekitemkekifalta.UiMessage
 import com.kekitemkekifalta.container
+import com.kekitemkekifalta.core.ClockType
 import com.kekitemkekifalta.core.Sector
 import com.kekitemkekifalta.core.StockClock
 import com.kekitemkekifalta.core.StockState
 import com.kekitemkekifalta.core.TextNormalizer
+import com.kekitemkekifalta.data.NewItem
 import com.kekitemkekifalta.data.db.ItemEntity
 import com.kekitemkekifalta.data.db.Side
+import com.kekitemkekifalta.data.clock
 import com.kekitemkekifalta.data.isHave
 import com.kekitemkekifalta.data.quantityLabel
 import com.kekitemkekifalta.data.sectorEnum
@@ -47,7 +50,9 @@ import com.kekitemkekifalta.ui.components.AddOptions
 import com.kekitemkekifalta.ui.components.ChoiceChip
 import com.kekitemkekifalta.ui.components.EmptyState
 import com.kekitemkekifalta.ui.components.FuelBar
+import com.kekitemkekifalta.ui.components.IconCircleButton
 import com.kekitemkekifalta.ui.components.KekButton
+import com.kekitemkekifalta.ui.components.KekGhostButton
 import com.kekitemkekifalta.ui.components.QuickAddBar
 import com.kekitemkekifalta.ui.components.ScreenHeader
 import com.kekitemkekifalta.ui.components.SectorChip
@@ -61,6 +66,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+/** Staples for a quick start on an empty house. */
+private val BASICS = listOf(
+    "Arroz", "Feijão", "Açúcar", "Café", "Óleo", "Sal", "Leite", "Ovos", "Banana", "Tomate", "Cebola", "Alho",
+    "Papel higiênico", "Detergente", "Sabonete", "Pasta de dente",
+)
 
 enum class HaveSort(val label: String) {
     SOON("acaba primeiro"),
@@ -125,8 +136,17 @@ class KekitemViewModel(private val c: AppContainer) : ViewModel() {
         query.value = ""
     }
 
+    fun addBasics() = c.appScope.launch {
+        BASICS.forEach { c.items.add(NewItem(it), Side.HAVE) }
+        c.messages.emit(UiMessage.Text("${BASICS.size} itens básicos no kekitem. Apague o que não tiver."))
+    }
+
     fun finished(id: String) = viewModelScope.launch {
         c.items.markFinished(id)?.let { c.messages.emit(UiMessage.Undo(it)) }
+    }
+
+    fun spoiled(id: String) = viewModelScope.launch {
+        c.items.markSpoiled(id)?.let { c.messages.emit(UiMessage.Undo(it)) }
     }
 }
 
@@ -177,7 +197,10 @@ fun KekitemScreen(onOpenItem: (String) -> Unit) {
         }
         if (ui.loaded && ui.totalHave == 0) {
             item(key = "empty") {
-                EmptyState("🫙", "A casa tá vazia?", "Adicione ali em cima o que tem em casa. O app aprende quanto tempo cada coisa dura.")
+                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    EmptyState("🫙", "A casa tá vazia?", "Adicione ali em cima o que tem em casa. O app aprende quanto tempo cada coisa dura.")
+                    KekGhostButton("Começar com o básico", onClick = { vm.addBasics() }, icon = R.drawable.ic_sparkle)
+                }
             }
         } else if (ui.loaded && ui.rows.isEmpty() && ui.query.isEmpty()) {
             item(key = "empty-filter") {
@@ -189,6 +212,7 @@ fun KekitemScreen(onOpenItem: (String) -> Unit) {
                 row = row,
                 onOpen = { onOpenItem(row.item.id) },
                 onFinished = { vm.finished(row.item.id) },
+                onSpoiled = { vm.spoiled(row.item.id) },
                 modifier = Modifier.padding(horizontal = 16.dp).animateItem(),
             )
         }
@@ -196,7 +220,7 @@ fun KekitemScreen(onOpenItem: (String) -> Unit) {
 }
 
 @Composable
-private fun HaveCard(row: HaveRow, onOpen: () -> Unit, onFinished: () -> Unit, modifier: Modifier = Modifier) {
+private fun HaveCard(row: HaveRow, onOpen: () -> Unit, onFinished: () -> Unit, onSpoiled: () -> Unit, modifier: Modifier = Modifier) {
     val item = row.item
     StickerCard(modifier.fillMaxWidth(), onClick = onOpen, contentPadding = PaddingValues(start = 14.dp, end = 10.dp, top = 12.dp, bottom = 12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -230,6 +254,10 @@ private fun HaveCard(row: HaveRow, onOpen: () -> Unit, onFinished: () -> Unit, m
                 }
             }
             Spacer(Modifier.width(10.dp))
+            if (item.clock == ClockType.SPOILS) {
+                IconCircleButton(R.drawable.ic_waste, "Estragou", onSpoiled)
+                Spacer(Modifier.width(6.dp))
+            }
             KekButton("acabou", onClick = onFinished, icon = R.drawable.ic_check, color = KekTheme.colors.mustard, contentColor = KekTheme.colors.inkOnLight)
         }
     }

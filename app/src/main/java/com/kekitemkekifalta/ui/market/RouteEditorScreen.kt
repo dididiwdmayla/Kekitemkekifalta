@@ -101,10 +101,11 @@ fun RouteEditorScreen(marketId: String, onBack: () -> Unit, onMarketDeleted: () 
         order = ui.aisles
     }
 
+    val scroll = rememberScrollState()
     Column(
         Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(scroll)
             .padding(bottom = 32.dp),
     ) {
         ScreenHeader(title = "Rota", subtitle = ui.market?.name, onBack = onBack) {
@@ -130,6 +131,7 @@ fun RouteEditorScreen(marketId: String, onBack: () -> Unit, onMarketDeleted: () 
                 dragging = false
             },
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            scrollState = scroll,
         ) { aisle, isDragging, handle ->
             val index = order.indexOfFirst { it.id == aisle.id }
             AisleRow(

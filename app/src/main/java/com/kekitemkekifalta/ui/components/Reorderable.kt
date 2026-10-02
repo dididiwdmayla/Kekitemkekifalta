@@ -1,5 +1,6 @@
 package com.kekitemkekifalta.ui.components
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,8 +17,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -26,6 +30,7 @@ import androidx.compose.ui.zIndex
  * A small drag-to-reorder column (fine for a few dozen rows, e.g. market aisles).
  * Each row gets a [Modifier] to put on its drag handle. [onMove] fires while dragging;
  * [onDragEnd] when the finger lifts, which is the moment to persist the new order.
+ * Pass the enclosing [scrollState] to auto-scroll when a row is dragged near the screen edges.
  */
 @Composable
 fun <T> ReorderableColumn(
@@ -36,12 +41,18 @@ fun <T> ReorderableColumn(
     onDragEnd: () -> Unit,
     modifier: Modifier = Modifier,
     spacing: Dp = 10.dp,
+    scrollState: ScrollState? = null,
     row: @Composable (item: T, dragging: Boolean, handle: Modifier) -> Unit,
 ) {
     var draggingKey by remember { mutableStateOf<String?>(null) }
     var offset by remember { mutableFloatStateOf(0f) }
     val heights = remember { mutableStateMapOf<String, Int>() }
-    val spacingPx = with(LocalDensity.current) { spacing.toPx() }
+    val tops = remember { mutableStateMapOf<String, Float>() }
+    val density = LocalDensity.current
+    val spacingPx = with(density) { spacing.toPx() }
+    val edgePx = with(density) { 96.dp.toPx() }
+    val scrollStepPx = with(density) { 12.dp.toPx() }
+    val view = LocalView.current
     val currentItems by rememberUpdatedState(items)
     val currentOnMove by rememberUpdatedState(onMove)
     val currentOnStart by rememberUpdatedState(onDragStart)
@@ -72,6 +83,17 @@ fun <T> ReorderableColumn(
                         onDrag = { change, amount ->
                             change.consume()
                             offset += amount.y
+                            if (scrollState != null) {
+                                val top = (tops[k] ?: 0f) + offset
+                                val bottom = top + (heights[k] ?: 0)
+                                val delta = when {
+                                    bottom > view.height - edgePx -> scrollStepPx
+                                    top < edgePx * 1.5f -> -scrollStepPx
+                                    else -> 0f
+                                }
+                                // Content scrolls under the finger: keep the row where the finger is.
+                                if (delta != 0f) offset += scrollState.dispatchRawDelta(delta)
+                            }
                             val list = currentItems
                             val index = list.indexOfFirst { keyOf(it) == k }
                             if (index < 0) return@detectDragGestures
@@ -94,6 +116,7 @@ fun <T> ReorderableColumn(
                 Box(
                     Modifier
                         .onSizeChanged { heights[k] = it.height }
+                        .onGloballyPositioned { tops[k] = it.positionInWindow().y }
                         .zIndex(if (dragging) 1f else 0f)
                         .graphicsLayer {
                             translationY = if (dragging) offset else 0f

@@ -120,6 +120,11 @@ shot depois-de-acabou
 tap "Kekifalta"
 alive "abrir kekifalta"
 shot kekifalta
+tap "Exportar lista"
+alive "exportar"
+shot exportar
+adb shell input keyevent 4
+sleep 1
 
 tap "Ir ao mercado"
 tap_field
@@ -157,6 +162,11 @@ sleep 1
 tap "Ajustes"
 alive "ajustes"
 shot ajustes
+tap "Ver desperdício"
+alive "desperdício"
+shot desperdicio
+adb shell input keyevent 4
+sleep 1
 tap "Escuro"
 tap "Kekitem"
 shot kekitem-escuro

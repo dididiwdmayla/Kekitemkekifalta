@@ -250,6 +250,7 @@ fun ChoiceChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     leading: String? = null,
+    @DrawableRes leadingIcon: Int? = null,
 ) {
     val c = KekTheme.colors
     Row(
@@ -261,6 +262,10 @@ fun ChoiceChip(
             .padding(horizontal = 12.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        if (leadingIcon != null) {
+            KekIcon(leadingIcon, null, tint = if (selected) c.paper else c.ink, size = 16.dp)
+            Spacer(Modifier.width(5.dp))
+        }
         if (leading != null) {
             Text(leading, style = MaterialTheme.typography.labelLarge)
             Spacer(Modifier.width(5.dp))

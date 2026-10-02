@@ -278,7 +278,7 @@ private fun KekBottomBar(current: Tab, needCount: Int, onSelect: (Tab) -> Unit) 
                                 indication = null,
                                 onClick = { onSelect(tab) },
                             )
-                            .padding(horizontal = 14.dp, vertical = 6.dp),
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Box {
@@ -298,7 +298,7 @@ private fun KekBottomBar(current: Tab, needCount: Int, onSelect: (Tab) -> Unit) 
                             }
                         }
                         Spacer(Modifier.height(2.dp))
-                        Text(tab.label, style = MaterialTheme.typography.labelMedium, color = content, maxLines = 1)
+                        Text(tab.label, style = MaterialTheme.typography.labelSmall, color = content, maxLines = 1, softWrap = false)
                     }
                 }
             }

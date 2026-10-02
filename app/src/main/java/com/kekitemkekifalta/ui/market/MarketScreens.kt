@@ -51,7 +51,6 @@ import com.kekitemkekifalta.data.isNeed
 import com.kekitemkekifalta.ui.components.EmptyState
 import com.kekitemkekifalta.ui.components.IconCircleButton
 import com.kekitemkekifalta.ui.components.KekButton
-import com.kekitemkekifalta.ui.components.KekGhostButton
 import com.kekitemkekifalta.ui.components.KekTextField
 import com.kekitemkekifalta.ui.components.Pill
 import com.kekitemkekifalta.ui.components.ScreenHeader
@@ -266,45 +265,47 @@ fun ShoppingScreen(marketId: String, onBack: () -> Unit, onSwitchMarket: (String
         ShoppingProgress(checked = ui.checked, total = ui.total, modifier = Modifier.padding(horizontal = 16.dp))
         Spacer(Modifier.height(8.dp))
         LazyColumn(Modifier.weight(1f), state = listState, contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp)) {
+            // A stable first item: the list keeps its scroll anchored to it when the data arrives.
+            item(key = "top") { Spacer(Modifier.height(1.dp)) }
             if (ui.loaded && ui.total == 0) {
                 item(key = "empty") {
                     EmptyState("🧺", "Nada no kekifalta", "Pode voltar pra casa. Ou dar uma volta só pra ver as ofertas.")
                 }
             }
-            routeMap(
-                groups = ui.groups.filter { it.items.isNotEmpty() || ui.total > 0 },
-                currentKey = ui.currentKey,
-                shopping = true,
-                expanded = expanded,
-                onToggleExpanded = { key -> expanded = if (key in expanded) expanded - key else expanded + key },
-                onItemClick = { vm.toggle(it.item.id, !it.checked) },
-                onItemLongClick = { noteFor = it },
-            )
-            item(key = "hint") {
-                Text(
-                    "Segure um item para anotar a prateleira.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = KekTheme.colors.muted,
-                    modifier = Modifier.padding(16.dp),
+            if (ui.loaded) {
+                routeMap(
+                    groups = ui.groups.filter { it.items.isNotEmpty() || ui.total > 0 },
+                    currentKey = ui.currentKey,
+                    shopping = true,
+                    expanded = expanded,
+                    onToggleExpanded = { key -> expanded = if (key in expanded) expanded - key else expanded + key },
+                    onItemClick = { vm.toggle(it.item.id, !it.checked) },
+                    onItemLongClick = { noteFor = it },
                 )
+                item(key = "hint") {
+                    Text(
+                        "Segure um item para anotar a prateleira.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = KekTheme.colors.muted,
+                        modifier = Modifier.padding(16.dp),
+                    )
+                }
             }
         }
-        Row(
+        Box(
             Modifier
                 .fillMaxWidth()
                 .background(KekTheme.colors.paper)
                 .padding(horizontal = 16.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            KekGhostButton("Sair", onBack, big = true)
             KekButton(
-                "Concluir compra",
+                if (ui.checked > 0) "Concluir compra (${ui.checked})" else "Concluir compra",
                 onClick = { confirmFinish = true },
                 icon = R.drawable.ic_check,
                 color = KekTheme.colors.leaf,
                 big = true,
                 enabled = ui.checked > 0,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.fillMaxWidth(),
             )
         }
     }

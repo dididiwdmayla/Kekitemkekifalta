@@ -14,6 +14,8 @@ import com.kekitemkekifalta.data.db.AppDatabase
 import com.kekitemkekifalta.notify.SummaryNotifier
 import com.kekitemkekifalta.notify.SummaryScheduler
 import com.kekitemkekifalta.data.UndoToken
+import android.util.Log
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -29,7 +31,10 @@ class AppContainer(context: Context) {
     val scheduler = SummaryScheduler(context, settings)
 
     /** For writes that must finish even if the user leaves the screen right away. */
-    val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    val appScope = CoroutineScope(
+        SupervisorJob() + Dispatchers.Main.immediate +
+            CoroutineExceptionHandler { _, e -> Log.e("kekitem", "Background write failed", e) },
+    )
 
     /** Snackbar messages from any screen, shown by the app shell. */
     val messages = MutableSharedFlow<UiMessage>(extraBufferCapacity = 8)

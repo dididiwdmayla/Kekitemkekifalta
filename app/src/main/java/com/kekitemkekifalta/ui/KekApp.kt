@@ -67,6 +67,7 @@ import com.kekitemkekifalta.ui.market.ShoppingScreen
 import com.kekitemkekifalta.ui.settings.SettingsScreen
 import com.kekitemkekifalta.ui.theme.KekTheme
 import com.kekitemkekifalta.ui.waste.WasteScreen
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -141,8 +142,10 @@ fun KekApp(openRequest: String?, onOpenRequestHandled: () -> Unit) {
     }
 
     LaunchedEffect(openRequest) {
+        if (openRequest == null) return@LaunchedEffect
+        nav.currentBackStackEntryFlow.first() // the graph must exist before navigating
         if (openRequest == MainActivity.OPEN_KEKIFALTA) nav.goToTab(KekifaltaDest)
-        if (openRequest != null) onOpenRequestHandled()
+        onOpenRequestHandled()
     }
 
     val backStack by nav.currentBackStackEntryAsState()
@@ -221,7 +224,7 @@ fun KekApp(openRequest: String?, onOpenRequestHandled: () -> Unit) {
                 RouteEditorScreen(
                     marketId = entry.toRoute<RouteEditorDest>().id,
                     onBack = { nav.popBackStack() },
-                    onMarketDeleted = { nav.goToTab(MarketsDest) },
+                    onMarketDeleted = { nav.popBackStack<MarketsDest>(inclusive = false) },
                 )
             }
             composable<ShoppingDest> { entry ->

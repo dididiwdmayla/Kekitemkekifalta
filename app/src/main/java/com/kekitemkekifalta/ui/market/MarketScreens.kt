@@ -182,6 +182,10 @@ fun MarketMapScreen(marketId: String, onBack: () -> Unit, onEditRoute: () -> Uni
                     style = MaterialTheme.typography.bodyMedium,
                     color = KekTheme.colors.muted,
                 )
+                if (ui.checked > 0) {
+                    Spacer(Modifier.height(10.dp))
+                    ShoppingProgress(checked = ui.checked, total = ui.total)
+                }
                 Spacer(Modifier.height(12.dp))
                 KekButton(
                     if (ui.checked > 0) "Continuar compra" else "Começar compra",
@@ -409,7 +413,7 @@ fun ShoppingScreen(marketId: String, onBack: () -> Unit, onSwitchMarket: (String
 }
 
 @Composable
-private fun ShoppingProgress(checked: Int, total: Int, modifier: Modifier = Modifier) {
+internal fun ShoppingProgress(checked: Int, total: Int, modifier: Modifier = Modifier) {
     val c = KekTheme.colors
     val fraction = if (total == 0) 0f else checked.toFloat() / total
     Column(modifier.fillMaxWidth()) {

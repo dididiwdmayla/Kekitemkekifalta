@@ -75,6 +75,7 @@ import com.kekitemkekifalta.ui.components.ScreenHeader
 import com.kekitemkekifalta.ui.components.SectionTitle
 import com.kekitemkekifalta.ui.components.StickerCard
 import com.kekitemkekifalta.ui.theme.KekTheme
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -152,21 +153,27 @@ class KekifaltaViewModel(private val c: AppContainer) : ViewModel() {
     suspend fun createMarket(name: String): String = c.markets.createMarket(name).also { c.settings.setLastMarketId(it) }
 
     fun export(context: Context, marketId: String?, action: ExportAction) = viewModelScope.launch {
-        val list = c.buildExportList(marketId)
-        when (action) {
-            ExportAction.SHARE_TEXT -> Exporter.shareText(context, list.text)
-            ExportAction.COPY_TEXT -> {
-                Exporter.copy(context, list.text)
-                c.messages.emit(UiMessage.Text("Lista copiada"))
+        try {
+            val list = c.buildExportList(marketId)
+            when (action) {
+                ExportAction.SHARE_TEXT -> Exporter.shareText(context, list.text)
+                ExportAction.COPY_TEXT -> {
+                    Exporter.copy(context, list.text)
+                    c.messages.emit(UiMessage.Text("Lista copiada"))
+                }
+                ExportAction.SHARE_PDF -> {
+                    val file = withContext(Dispatchers.IO) { Exporter.writePdf(context, list) }
+                    Exporter.sharePdf(context, file)
+                }
+                ExportAction.PRINT_PDF -> {
+                    val file = withContext(Dispatchers.IO) { Exporter.writePdf(context, list) }
+                    Exporter.printPdf(context, file)
+                }
             }
-            ExportAction.SHARE_PDF -> {
-                val file = withContext(Dispatchers.IO) { Exporter.writePdf(context, list) }
-                Exporter.sharePdf(context, file)
-            }
-            ExportAction.PRINT_PDF -> {
-                val file = withContext(Dispatchers.IO) { Exporter.writePdf(context, list) }
-                Exporter.printPdf(context, file)
-            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            c.messages.emit(UiMessage.Text("Não deu pra exportar: ${e.message ?: e.javaClass.simpleName}"))
         }
     }
 }

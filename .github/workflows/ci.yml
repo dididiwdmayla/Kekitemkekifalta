@@ -67,6 +67,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v7
 
@@ -96,5 +98,21 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: smoke-logs
-          path: smoke-*.log
+          path: |
+            smoke-*.log
+            smoke-shots/
           if-no-files-found: ignore
+
+      # Screenshots for whoever cannot run an emulator locally (e.g. Claude):
+      # git fetch origin +refs/ci/smoke-shots:refs/ci/smoke-shots. Hidden ref, not a branch.
+      - name: Publicar screenshots em refs/ci/smoke-shots
+        if: always() && github.event_name == 'push' && github.ref_name != 'main'
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          [ -d smoke-shots ] || exit 0
+          cd smoke-shots
+          git init -q
+          git add -A
+          git -c user.name=ci -c user.email=ci@localhost commit -qm "smoke shots ${GITHUB_SHA::7}"
+          git push -qf "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}" HEAD:refs/ci/smoke-shots

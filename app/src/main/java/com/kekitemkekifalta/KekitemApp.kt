@@ -14,6 +14,9 @@ import com.kekitemkekifalta.data.db.AppDatabase
 import com.kekitemkekifalta.notify.SummaryNotifier
 import com.kekitemkekifalta.notify.SummaryScheduler
 import com.kekitemkekifalta.data.UndoToken
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 /** Manual dependency container: everything the screens need, created once. */
@@ -24,6 +27,9 @@ class AppContainer(context: Context) {
     val markets: MarketRepository = RoomMarketRepository(db, { settings.householdId })
     val backup: BackupRepository = RoomBackupRepository(db, settings)
     val scheduler = SummaryScheduler(context, settings)
+
+    /** For writes that must finish even if the user leaves the screen right away. */
+    val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     /** Snackbar messages from any screen, shown by the app shell. */
     val messages = MutableSharedFlow<UiMessage>(extraBufferCapacity = 8)
